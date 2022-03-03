@@ -29,7 +29,7 @@ A website created to download archived PlaysTV videos. For more info, see https:
 The video files are stored on my own server.
 
 ## TODO
-* **Transfer the website to C# .NET**
+* **Transfer the website to C# .NET (80% Done)**
 * Download button - Download all clips zipped. 
 * Download video - Download one video. 
 * Sort - Sort by games/dates.
