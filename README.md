@@ -28,13 +28,14 @@
 A website created to download archived PlaysTV videos. For more info, see https://wiki.archiveteam.org/index.php/Plays.tv
 The video files are stored on my own server.
 
-## TODO
-* **Transfer the website to C# .NET (80% Done)**
-* Download button - Download all clips zipped. 
+## Future Work
 * Download video - Download one video. 
 * Sort - Sort by games/dates.
 * Add video comments (Old comments).
 * Suggest friends videos.
+
+## Done
+* Download button - Download all clips zipped.
 
 ## Website
 [![Product Name Screen Shot][product-screenshot]]()
