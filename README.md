@@ -30,12 +30,12 @@ The video files are stored on my own server.
 
 ## Future Work
 * Download video - Download one video. 
-* Sort - Sort by games/dates.
 * Add video comments (Old comments).
 * Suggest friends videos.
 
 ## Done
 * Download button - Download all clips zipped.
+* Sort - Sort by games & dates.
 
 ## Website
 [![Product Name Screen Shot][product-screenshot]]()
