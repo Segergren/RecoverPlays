@@ -215,25 +215,22 @@ def download_video(url, data_feed_id, title):
 
     #Download the video PAGE
     video_req = requests.get(current_video.url, allow_redirects=False)
-
     video_soup = BeautifulSoup(video_req.content, 'html.parser')
- 
     video_source_tag = video_soup.find_all("source")
 
+    #Get game, views and date
     try:
         current_video.game = (video_soup.find_all("a", {"class": "game-link"})[0].text)
-        #video_game = (video_soup.find_all("a", {"class": "game-link"})[0].text)
     except Exception as ex:
         pass
-    
     try:
         current_video.views = int(str(video_soup.find_all("span", {"class": "views-text"})[0].text).split()[0])
-        #video_views = int(str(video_soup.find_all("span", {"class": "views-text"})[0].text).split()[0])
     except Exception as ex:
         pass
-
-
-    current_video.date = str(datetime.strptime(date_fix(str(video_soup.find_all("a",{"class","created-time"})[0].text)), '%b %d %Y').date())
+    try:
+        current_video.date = str(datetime.strptime(date_fix(str(video_soup.find_all("a",{"class","created-time"})[0].text)), '%b %d %Y').date())
+    except Exception as ex:
+        pass
 
     #Different Plays video qualities
     qualities = [720,480,1080]
@@ -436,7 +433,6 @@ try:
         div.decompose()
 except Exception as ex:
     error_exit(ex)
-
 
 threads = []
 
