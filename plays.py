@@ -387,12 +387,14 @@ while(True):
             while(tries < 10):
                 profile_req = requests.get(profile_url, allow_redirects=False)
                 profile_soup = BeautifulSoup(profile_req.content, 'html.parser')
-                if('503 Service Unavailable' not in str(profile_soup)):
-                    print("503, retrying")
-                    tries = tries + 1
-                    time.sleep(15)
-                    break
 
+                if('503 Service Unavailable' not in str(profile_soup)):
+                    break
+                
+                print("503, retrying")
+                tries = tries + 1
+                time.sleep(15)
+                
             #Get user ID
             plays_user_id = profile_soup.find_all("button",{'class','btn-follow'})[0]['data-obj-id']
             profile_picture = profile_soup.find_all("img",{'class','profile-avatar'})[0]['data-lazyload'].replace("//web","https://web")
