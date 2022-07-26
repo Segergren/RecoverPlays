@@ -351,10 +351,15 @@ try:
     val = (username.lower(),)
     databaseCursor.execute(sql, val)
     database.commit()
+    sql = "DELETE FROM friends WHERE LOWER(username)=%s"
+    val = (username.lower(),)
+    databaseCursor.execute(sql, val)
+    database.commit()
     sql = "INSERT INTO fetching (username, currently_fetching) VALUES (%s,1)"
     val = (username,)
     databaseCursor.execute(sql, val)
     database.commit()
+
     databaseCursor.close()
     database.close()
 
@@ -394,7 +399,7 @@ while(True):
                 print("503, retrying")
                 tries = tries + 1
                 time.sleep(15)
-                
+                    
             #Get user ID
             plays_user_id = profile_soup.find_all("button",{'class','btn-follow'})[0]['data-obj-id']
             profile_picture = profile_soup.find_all("img",{'class','profile-avatar'})[0]['data-lazyload'].replace("//web","https://web")
@@ -513,6 +518,7 @@ for x in threads:
     print("Wait for finish")
     x.join()
 
+#Done getting videos
 logging.info("Done... Inserting into the database.")
 database = mysql.connector.connect(
     host="localhost",
@@ -527,4 +533,86 @@ databaseCursor.execute(sql,val)
 database.commit()
 databaseCursor.close()
 database.close()
-logging.info("Inserting into the database. Done!")
+
+#Let's get Followers and Following
+def follow(type):
+    profile_archive_url = "https://archive.org/wayback/available?url=" + "https://plays.tv/u/" + username + "/" + type
+    profile_archive_req = requests.get(profile_archive_url, allow_redirects=False)
+    profile_archive_data = profile_archive_req.json()
+    print(profile_archive_data)
+
+    #Check if the follow site was archived
+    if(len(profile_archive_data["archived_snapshots"]) > 0):
+        profile_url = profile_archive_data["archived_snapshots"]["closest"]["url"]
+        tries = 0
+        while(tries < 10):
+            profile_req = requests.get(profile_url, allow_redirects=False)
+            profile_soup = BeautifulSoup(profile_req.content, 'html.parser')
+
+            if('503 Service Unavailable' in str(profile_soup)):
+                time.sleep(15)
+                tries = tries + 1
+                continue
+                
+            friends = profile_soup.find_all("li",{"class","user-item"})
+
+            friend_path = "C:/Users/database/Desktop/PlaysRecover/friends/" + username
+            
+            #For each friend
+            for friend in friends:
+                name = str(friend.find_all("div",{"class","name"})[0].text).strip()
+                name = name.replace("Verified Account","")
+                try:
+                    followers = friend.find_all("p",{"class","follower-count"})[0].text
+                except:
+                    followers = 0
+
+                #Get the users background banner
+                try:
+                    banner = friend.find_all("img",{"class","banner-image"})[0]['data-lazyload']
+                    banner = banner.replace("//web","https://web")
+                    profile_picture_dates = str(banner).split("/")[4]
+                    banner = banner.replace(profile_picture_dates,profile_picture_dates + "if_")
+                    urllib.request.urlretrieve(banner, friend_path + "/" + name + "_banner.jpg")
+                except:
+                    banner = None
+
+                #Get the users logo
+                try:
+                    logo = friend.find_all("div",{"class","avatar-container"})[0].find_all('img')[0]['data-lazyload']
+                    logo = logo.replace("//web","https://web")
+                    profile_picture_dates = str(logo).split("/")[4]
+                    logo = logo.replace(profile_picture_dates,profile_picture_dates + "if_")
+
+                    urllib.request.urlretrieve(logo, friend_path + "/" + name + ".jpg")
+                except:
+                    logo = None
+                
+                database = mysql.connector.connect(
+                    host="localhost",
+                    user="root",
+                    password="",
+                    database="Plays-tv"
+                )
+                databaseCursor = database.cursor()
+
+                #Insert the friend
+                sql = "INSERT INTO friends (username, friend_username, friend_followers, status) VALUES (%s,%s,%s,%s)"
+                val = (username, str(name), str(followers), str(type))
+                databaseCursor.execute(sql, val)
+                database.commit()
+
+                print("------------")
+                print(name)
+                print(followers)
+                print(banner)
+                print(logo)
+            break
+
+friend_path = "C:/Users/database/Desktop/PlaysRecover/friends/" + username
+if os.path.exists(friend_path):
+    shutil.rmtree(friend_path)
+os.mkdir(friend_path)
+
+follow("followers")
+follow("following")
